@@ -2,27 +2,27 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Team Order Generator - Capsule Toy Machine</title>
+    <title>Lucky Draw Machine</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Team Order Generator - Capsule Toy Machine</h1>
+    <h1>Capsule Toy Machine</h1>
 
     <!-- Main Container with Input and Machine -->
     <div class="main-container">
         <!-- Team Input Section -->
         <div class="input-section">
-            <h2>Enter Team Names</h2>
+            <h2>Enter Names</h2>
             <div class="input-container">
                 <input type="text" id="team-input" placeholder="Type Name Here">
-                <button onclick="addTeam()">Add Team</button>
+                <button onclick="addTeam()">Add</button>
             </div>
             <ol id="team-list"></ol>
             <button class="reset-btn" onclick="resetGame()">Reset</button>
 
             <!-- Order List Section -->
             <div class="order-section">
-                <h2>Team Order</h2>
+                <h2>Order of Draw</h2>
                 <ol id="order-list"></ol>
             </div>
         </div>
@@ -37,7 +37,7 @@
                 </div>
                 <div class="base">
                     <div class="coin-slot">COIN IN</div>
-                    <button class="twist-knob" onclick="twistKnob()" id="twist-knob">Twist</button>
+                    <button class="twist-knob" onclick="twistKnob()" id="twist-knob">Go</button>
                     <div class="output-slot" id="output-slot">
                         <div class="capsule output-capsule" id="output-capsule" style="display: none;"></div>
                     </div>
@@ -83,7 +83,7 @@
             const domeCenterX = 125; // Center of dome (250px / 2)
             const domeCenterY = 125;
 
-            capsules.forEach(capsule => {
+            capsules.forEach((capsule) => {
                 if (!capsule.isMoving) return; // Skip if capsule is not moving (e.g., during drop)
 
                 // Update position
@@ -124,18 +124,37 @@
         // Start the game loop
         requestAnimationFrame(updateCapsules);
 
-        // Add a team to the list
+        // Add a team to the list with enhanced validation (without max names limit)
         function addTeam() {
             const teamInput = document.getElementById('team-input');
-            const teamName = teamInput.value.trim();
+            let teamName = teamInput.value.trim();
+
+            // Validation 1: Check if the input is empty
             if (teamName === '') {
-                alert('Please enter a team name!');
+                alert('Please enter a name! The input cannot be empty.');
                 return;
             }
-            if (teams.includes(teamName)) {
-                alert('This team name is already added!');
+
+            // Validation 2: Check length (e.g., max 20 characters)
+            if (teamName.length > 20) {
+                alert('Name is too long! Please use 20 characters or fewer.');
                 return;
             }
+
+            // Validation 3: Check for special characters (allow only letters, numbers, spaces, and hyphens)
+            const validNamePattern = /^[a-zA-Z0-9\s-]+$/;
+            if (!validNamePattern.test(teamName)) {
+                alert('Invalid name! Please use only letters, numbers, spaces, or hyphens.');
+                return;
+            }
+
+            // Validation 4: Check for duplicate names (case-insensitive)
+            if (teams.some(team => team.toLowerCase() === teamName.toLowerCase())) {
+                alert('This name is already added! Please use a different name.');
+                return;
+            }
+
+            // If all validations pass, add the team
             teams.push(teamName);
             teamInput.value = ''; // Clear input
 
@@ -155,7 +174,7 @@
             const capsule = document.createElement('div');
             capsule.className = 'capsule';
             capsule.dataset.team = teamName; // Store only the team name in dataset
-            capsule.style.backgroundColor = colors[capsules.length % colors.length]; // Assign a color
+            capsule.style.backgroundColor = colors[capsules.length % colors.length]; // Assign a color (cycles through colors)
 
             // Initial position near the center of the dome
             const domeWidth = 250; // Dome width
@@ -184,11 +203,11 @@
         // Twist the knob to dispense a team
         function twistKnob() {
             if (teams.length < 1) {
-                alert('Please add at least 1 team to start!');
+                alert('Please add at least 1 name to start!');
                 return;
             }
             if (capsules.length === 0) {
-                alert('All teams have been ordered!');
+                alert('All names have been drawn!');
                 return;
             }
 
