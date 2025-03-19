@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Team Order Generator - Capsule Toy Machine</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Team Order Generator - Capsule Toy Machine</h1>
+
+    <!-- Main Container with Input and Machine -->
+    <div class="main-container">
+        <!-- Team Input Section -->
+        <div class="input-section">
+            <h2>Enter Team Names</h2>
+            <div class="input-container">
+                <input type="text" id="team-input" placeholder="Type Name Here">
+                <button onclick="addTeam()">Add Team</button>
+            </div>
+            <ol id="team-list"></ol>
+            <button class="reset-btn" onclick="resetGame()">Reset</button>
+
+            <!-- Order List Section -->
+            <div class="order-section">
+                <h2>Team Order</h2>
+                <ol id="order-list"></ol>
+            </div>
+        </div>
+
+        <!-- Capsule Toy Machine Section -->
+        <div class="machine-section">
+            <div class="machine">
+                <div class="dome">
+                    <div class="capsule-container" id="capsule-container">
+                        <!-- Capsules will be added dynamically -->
+                    </div>
+                </div>
+                <div class="base">
+                    <div class="coin-slot">COIN IN</div>
+                    <button class="twist-knob" onclick="twistKnob()" id="twist-knob">Twist</button>
+                    <div class="output-slot" id="output-slot">
+                        <div class="capsule output-capsule" id="output-capsule" style="display: none;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Team Dispense Pop-up Modal -->
+    <div class="modal" id="dispense-modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">×</span>
+            <div class="dispense-display">
+                <div class="capsule dispense-capsule" id="dispense-capsule"></div>
+                <p>Team: <span id="dispense-team"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        let teams = [];
+        let capsules = [];
+        let teamOrder = [];
+        let colors = ['#ff4444', '#1e90ff', '#ffff00', '#ff69b4', '#00ff00']; // Capsule colors
+
+        // Add physics properties to each capsule
+        function createCapsulePhysics(capsule) {
+            return {
+                element: capsule,
+                x: parseFloat(capsule.style.left) || 0,
+                y: parseFloat(capsule.style.top) || 0,
+                vx: (Math.random() * 4 - 2), // Random velocity x (-2 to 2 px/frame)
+                vy: (Math.random() * 4 - 2), // Random velocity y (-2 to 2 px/frame)
+                radius: 20, // Capsule radius (40px width/height / 2)
+                isMoving: true // Flag to control movement
+            };
+        }
+
+        // Game loop to update capsule positions
+        function updateCapsules() {
+            const domeRadius = 125; // Dome radius (250px / 2)
+            const domeCenterX = 125; // Center of dome (250px / 2)
+            const domeCenterY = 125;
+
+            capsules.forEach(capsule => {
+                if (!capsule.isMoving) return; // Skip if capsule is not moving (e.g., during drop)
+
+                // Update position
+                capsule.x += capsule.vx;
+                capsule.y += capsule.vy;
+
+                // Check collision with dome boundary (circular)
+                const dx = capsule.x + capsule.radius - domeCenterX;
+                const dy = capsule.y + capsule.radius - domeCenterY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance + capsule.radius > domeRadius) {
+                    // Capsule is outside the dome, calculate reflection
+                    const angle = Math.atan2(dy, dx);
+                    const speed = Math.sqrt(capsule.vx * capsule.vx + capsule.vy * capsule.vy);
+                    const normalX = Math.cos(angle);
+                    const normalY = Math.sin(angle);
+
+                    // Reflect velocity
+                    const dot = capsule.vx * normalX + capsule.vy * normalY;
+                    capsule.vx -= 2 * dot * normalX;
+                    capsule.vy -= 2 * dot * normalY;
+
+                    // Adjust position to prevent sticking to the edge
+                    const overlap = distance + capsule.radius - domeRadius;
+                    capsule.x -= overlap * normalX;
+                    capsule.y -= overlap * normalY;
+                }
+
+                // Update capsule position in DOM
+                capsule.element.style.left = `${capsule.x}px`;
+                capsule.element.style.top = `${capsule.y}px`;
+            });
+
+            requestAnimationFrame(updateCapsules);
+        }
+
+        // Start the game loop
+        requestAnimationFrame(updateCapsules);
+
+        // Add a team to the list
+        function addTeam() {
+            const teamInput = document.getElementById('team-input');
+            const teamName = teamInput.value.trim();
+            if (teamName === '') {
+                alert('Please enter a team name!');
+                return;
+            }
+            if (teams.includes(teamName)) {
+                alert('This team name is already added!');
+                return;
+            }
+            teams.push(teamName);
+            teamInput.value = ''; // Clear input
+
+            // Update team list display
+            const teamList = document.getElementById('team-list');
+            const li = document.createElement('li');
+            li.textContent = teamName; // Numbering handled by <ol>
+            teamList.appendChild(li);
+
+            // Add a capsule for the team
+            addCapsule(teamName);
+        }
+
+        // Add a capsule to the machine
+        function addCapsule(teamName) {
+            const capsuleContainer = document.getElementById('capsule-container');
+            const capsule = document.createElement('div');
+            capsule.className = 'capsule';
+            capsule.dataset.team = teamName; // Store only the team name in dataset
+            capsule.style.backgroundColor = colors[capsules.length % colors.length]; // Assign a color
+
+            // Initial position near the center of the dome
+            const domeWidth = 250; // Dome width
+            const domeHeight = 250; // Dome height
+            const capsuleSize = 40; // Capsule size
+
+            const xOffset = (domeWidth - capsuleSize) / 2 + (Math.random() * 20 - 10); // Near center with slight variation
+            const yOffset = (domeHeight - capsuleSize) / 2 + (Math.random() * 20 - 10);
+
+            capsule.style.left = `${xOffset}px`;
+            capsule.style.top = `${yOffset}px`;
+
+            // Add slight random rotation for natural look
+            capsule.style.transform = `rotate(${Math.random() * 30 - 15}deg)`;
+
+            // Set z-index based on addition order for layering
+            capsule.style.zIndex = capsules.length;
+
+            capsuleContainer.appendChild(capsule);
+
+            // Add physics properties and store in capsules array
+            const capsulePhysics = createCapsulePhysics(capsule);
+            capsules.push(capsulePhysics);
+        }
+
+        // Twist the knob to dispense a team
+        function twistKnob() {
+            if (teams.length < 1) {
+                alert('Please add at least 1 team to start!');
+                return;
+            }
+            if (capsules.length === 0) {
+                alert('All teams have been ordered!');
+                return;
+            }
+
+            // Disable the twist knob during animation
+            const twistKnob = document.getElementById('twist-knob');
+            twistKnob.disabled = true;
+
+            // Increase speed of capsules to simulate shake
+            capsules.forEach(capsule => {
+                if (capsule.isMoving) {
+                    capsule.vx *= 1.5; // Increase speed by 50%
+                    capsule.vy *= 1.5;
+                }
+            });
+
+            // Select a random capsule
+            const randomIndex = Math.floor(Math.random() * capsules.length);
+            const selectedCapsule = capsules[randomIndex];
+            const selectedTeam = selectedCapsule.element.dataset.team; // Should be just the team name
+
+            // Delay the capsule drop to allow pinball motion to continue
+            const pinballDelay = 2000; // 2 seconds delay for pinball motion
+            const dropAnimationDuration = 1000; // 1 second for drop animation
+
+            setTimeout(() => {
+                // Stop the capsule's movement
+                selectedCapsule.isMoving = false;
+
+                // Animate the selected capsule dropping
+                const outputCapsule = document.getElementById('output-capsule');
+                outputCapsule.style.backgroundColor = selectedCapsule.element.style.backgroundColor;
+                outputCapsule.style.display = 'block';
+                outputCapsule.classList.add('drop');
+
+                // Remove the capsule and update order after the drop animation
+                setTimeout(() => {
+                    selectedCapsule.element.remove();
+                    capsules.splice(randomIndex, 1);
+                    teams = teams.filter(team => team !== selectedTeam);
+                    teamOrder.push(selectedTeam); // Push only the team name
+
+                    // Update order list
+                    const orderList = document.getElementById('order-list');
+                    orderList.innerHTML = '';
+                    teamOrder.forEach((team) => {
+                        const li = document.createElement('li');
+                        li.textContent = team; // Let <ol> handle the numbering
+                        orderList.appendChild(li);
+                    });
+
+                    // Show dispense modal
+                    showDispenseModal(selectedTeam, selectedCapsule.element.style.backgroundColor);
+
+                    twistKnob.disabled = false; // Re-enable knob
+                }, dropAnimationDuration); // Wait for the drop animation to complete
+            }, pinballDelay); // Wait for the pinball motion delay
+        }
+
+        // Show the dispense modal with capsule and team name
+        function showDispenseModal(teamName, color) {
+            const modal = document.getElementById('dispense-modal');
+            const dispenseCapsule = document.getElementById('dispense-capsule');
+            const dispenseTeam = document.getElementById('dispense-team');
+            dispenseCapsule.style.backgroundColor = color;
+            dispenseTeam.textContent = teamName;
+            modal.style.display = 'block';
+        }
+
+        // Close the modal
+        function closeModal() {
+            const modal = document.getElementById('dispense-modal');
+            modal.style.display = 'none';
+        }
+
+        // Allow closing the modal by clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('dispense-modal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        };
+
+        // Reset the game
+        function resetGame() {
+            teams = [];
+            capsules = [];
+            teamOrder = [];
+
+            // Clear team list
+            const teamList = document.getElementById('team-list');
+            teamList.innerHTML = '';
+
+            // Clear capsules
+            const capsuleContainer = document.getElementById('capsule-container');
+            capsuleContainer.innerHTML = '';
+
+            // Clear order list
+            const orderList = document.getElementById('order-list');
+            orderList.innerHTML = '';
+
+            // Reset output capsule
+            const outputCapsule = document.getElementById('output-capsule');
+            outputCapsule.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

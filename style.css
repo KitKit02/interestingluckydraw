@@ -1,0 +1,285 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    color: #333;
+}
+
+h2 {
+    color: #555;
+}
+
+/* Main Container */
+.main-container {
+    display: flex;
+    justify-content: space-between;
+    max-width: 800px;
+    margin: 0 auto;
+    gap: 20px;
+    padding-top: 35px;
+}
+
+/* Input Section */
+.input-section {
+    flex: 1;
+    max-width: 300px;
+    margin-bottom: 40px;
+    text-align: left;
+}
+
+.input-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#team-input {
+    padding: 5px 10px; /* Reduced padding for thinner height */
+    font-size: 16px;
+    width: 250px; /* Increased width for longer view */
+    height: 25px; /* Thinner height */
+    border: 2px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    padding: 5px 10px; /* Reduced padding for thinner height */
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    color: white;
+    height: 38px; /* Thinner height to match input */
+    width: 160px; /* Longer width */
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#team-list {
+    list-style-position: inside;
+    padding: 0;
+    margin: 0;
+    max-height: 200px; /* Fixed height for 4-5 items */
+    overflow-y: auto; /* Add scrollbar */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+#team-list li {
+    padding: 10px 20px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+#team-list li:last-child {
+    border-bottom: none;
+}
+
+.reset-btn {
+    margin-top: 10px;
+    background-color: #ff4444;
+    height: 30px; /* Thinner height */
+    width: 100px; /* Longer width */
+}
+
+.reset-btn:hover {
+    background-color: #e03e3e;
+}
+
+/* Order Section */
+.order-section {
+    margin-top: 20px;
+}
+
+#order-list {
+    list-style-position: inside;
+    padding: 0;
+    margin: 0;
+    max-height: 200px; /* Match team-list height */
+    overflow-y: auto; /* Add scrollbar */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+#order-list li {
+    padding: 10px 20px;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+}
+
+#order-list li:last-child {
+    border-bottom: none;
+}
+
+/* Machine Section */
+.machine-section {
+    flex: 1;
+    max-width: 308px;
+}
+
+.machine {
+    width: 308px;
+    height: 450px;
+    position: relative;
+    background-color: #fff;
+    border: 5px solid #333;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.dome {
+    width: 250px;
+    height: 250px;
+    background-color: rgba(255, 255, 255, 0.2); /* Transparent dome */
+    border: 5px solid #333;
+    border-radius: 50%;
+    position: absolute;
+    top: 20px;
+    left: 25px;
+    overflow: hidden;
+}
+
+.capsule-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.capsule {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #333;
+    position: absolute;
+    transition: transform 0.5s ease; /* Keep transform transition for rotation */
+}
+
+.base {
+    width: 100%;
+    height: 200px;
+    position: absolute;
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.coin-slot {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background-color: #1e90ff;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.twist-knob {
+    width: 60px;
+    height: 60px;
+    background-color: #fff;
+    border: 5px solid #333;
+    border-radius: 50%;
+    position: absolute;
+    top: 50px;
+    right: 20px;
+    font-size: 14px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.twist-knob:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.output-slot {
+    width: 80px;
+    height: 50px;
+    background-color: #ddd;
+    border: 2px solid #333;
+    border-radius: 5px;
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.output-capsule {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #333;
+}
+
+.drop {
+    animation: drop 1s forwards;
+}
+
+@keyframes drop {
+    0% { transform: translateY(-200px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Modal for Dispense */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    width: 300px;
+    margin: 15% auto;
+    text-align: center;
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #333;
+}
+
+.close-btn:hover {
+    color: #ff4444;
+}
+
+.dispense-display {
+    margin-top: 20px;
+}
+
+.dispense-capsule {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: 2px solid #333;
+    margin-top: -18px;
+}
